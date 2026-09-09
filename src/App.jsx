@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { db, ensureSeeded } from './core/database/db.js';
+import { isNativeApp } from './core/platform.js';
 import Landing from './landing/Landing.jsx';
 import Onboarding from './features/onboarding/Onboarding.jsx';
 import Home from './features/home/Home.jsx';
@@ -8,13 +9,23 @@ import Chat from './features/chat/Chat.jsx';
 import Settings from './features/settings/Settings.jsx';
 import Admin from './features/admin/Admin.jsx';
 import StoryDetail from './features/stories/StoryDetail.jsx';
-import Search from './features/search/Search.jsx';
+import Stories from './features/stories/Stories.jsx';
 import Chats from './features/chats/Chats.jsx';
 
 function WorkshopGate({ children }) {
   if (sessionStorage.getItem('afterlight_workshop') !== '1') {
     return <Navigate to="/app/settings" replace />;
   }
+  return children;
+}
+
+/* Route-level safety net: the APK must never render the marketing site. */
+function WebOnly({ children }) {
+  if (isNativeApp()) return <Navigate to="/app" replace />;
+  return children;
+}
+
+function AppOnly({ children }) {
   return children;
 }
 
@@ -42,9 +53,18 @@ export default function App() {
     );
   }
 
+  const needsOnboarding = !profile;
+
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route
+        path="/"
+        element={
+          <WebOnly>
+            <Landing />
+          </WebOnly>
+        }
+      />
       <Route
         path="/app"
         element={profile ? <Home profile={profile} /> : <Navigate to="/app/welcome" replace />}
@@ -64,15 +84,25 @@ export default function App() {
           )
         }
       />
-      <Route path="/app/search" element={profile ? <Search /> : <Navigate to="/app/welcome" />} />
-      <Route path="/app/chats" element={profile ? <Chats /> : <Navigate to="/app/welcome" />} />
+      <Route
+        path="/app/stories"
+        element={needsOnboarding ? <Navigate to="/app/welcome" /> : <Stories />}
+      />
+      {/* Legacy alias: the library tab used to live at /app/search. */}
+      <Route path="/app/search" element={<Navigate to="/app/stories" replace />} />
+      <Route
+        path="/app/chats"
+        element={needsOnboarding ? <Navigate to="/app/welcome" /> : <Chats />}
+      />
       <Route
         path="/app/story/:id"
-        element={profile ? <StoryDetail profile={profile} /> : <Navigate to="/app/welcome" />}
+        element={
+          needsOnboarding ? <Navigate to="/app/welcome" /> : <StoryDetail profile={profile} />
+        }
       />
       <Route
         path="/app/play/:storyId"
-        element={profile ? <Chat profile={profile} /> : <Navigate to="/app/welcome" />}
+        element={needsOnboarding ? <Navigate to="/app/welcome" /> : <Chat profile={profile} />}
       />
       <Route
         path="/app/settings"
@@ -102,6 +132,9 @@ export default function App() {
           )
         }
       />
+      {/* Unknown URLs: native shell falls back to the app, web falls back
+          to the marketing site. */}
+      <Route path="*" element={<Navigate to={isNativeApp() ? '/app' : '/'} replace />} />
     </Routes>
   );
 }

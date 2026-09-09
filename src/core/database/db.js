@@ -65,7 +65,7 @@ export async function ensureSeeded() {
       id: 'app',
       textScale: 1,
       encryptionNote: 'API keys are locally encoded (al1), not keystore-encrypted.',
-      version: '1.0.0',
+      version: '1.0.1',
     });
   }
   if ((await db.providers.count()) === 0) {

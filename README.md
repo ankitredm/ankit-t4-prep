@@ -14,7 +14,8 @@ npm run dev
 
 ```bash
 npm ci
-node scripts/qa-unit.mjs
+node scripts/qa-unit.mjs          # parser / emoji / secrets / mock / context unit checks
+node scripts/qa-integration.mjs   # seeded data + conversation flow + provider payload checks (fake IndexedDB)
 npm run build
 ```
 

@@ -22,6 +22,7 @@ jobs:
           npm ci
           npm run build
           node scripts/qa-unit.mjs
+          node scripts/qa-integration.mjs
 
       - uses: actions/setup-java@v4
         with:

@@ -16,6 +16,33 @@ export function coverForStory(story) {
   return GENRE_COVER[story?.genre] || GENRE_COVER.default;
 }
 
+/* Prefix site-relative asset URLs with the Vite base so the same bundled
+ * assets resolve on Android (base "/"), GitHub Pages (base
+ * "/ankit-t4-prep/"), and local dev. Remote, data:, blob:, and capacitor:
+ * URLs pass through untouched. Stored DB URLs stay site-relative so QA
+ * and existing installs are unaffected — apply at render time only. */
+const APP_BASE = (() => {
+  try {
+    const b = import.meta?.env?.BASE_URL;
+    if (typeof b === 'string' && b.length > 1) return b.endsWith('/') ? b.slice(0, -1) : b;
+  } catch {
+    /* Non-Vite runtime (QA harness): no prefix. */
+  }
+  return '';
+})();
+
+export function withBase(url) {
+  if (!url || typeof url !== 'string') return url;
+  if (/^(https?:|data:|blob:|capacitor:)/i.test(url)) return url;
+  if (!APP_BASE) return url;
+  return `${APP_BASE}${url.startsWith('/') ? url : `/${url}`}`;
+}
+
+/* Render-ready cover: base-aware, for <img> and background-image use. */
+export function coverSrc(story) {
+  return withBase(coverForStory(story));
+}
+
 export async function mediaForStory(storyId) {
   return db.media.where('storyId').equals(storyId).toArray();
 }

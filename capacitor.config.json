@@ -2,5 +2,5 @@
   "appId": "app.afterlight.personal",
   "appName": "Afterlight",
   "webDir": "dist",
-  "server": { "androidScheme": "https" }
+  "server": { "androidScheme": "https", "appStartPath": "/app" }
 }

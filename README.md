@@ -25,7 +25,16 @@ GitHub Pages: set `VITE_BASE=/ankit-t4-prep/` when building so assets and `/app`
 
 App ID: `app.afterlight.personal`  
 App name: Afterlight  
-versionName: `1.0.0` (from `android/app/build.gradle`)
+versionName: `1.0.1` (from `android/app/build.gradle`)
+
+The APK launches directly into `/app` via `server.appStartPath` in
+`capacitor.config.json` (native WebView start path — no dev server URL).
+A pre-render guard in `src/main.jsx` plus route guards in `src/App.jsx`
+keep the native shell inside `/app/*` even after reloads or stale state,
+so the marketing site at `/` never renders inside the APK. Back navigation
+is handled in `MainActivity` (WebView history first, exit at app root),
+and the activity uses `adjustResize` so the chat composer stays visible
+above the Android keyboard.
 
 ```bash
 npm ci

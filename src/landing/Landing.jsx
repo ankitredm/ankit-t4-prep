@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const APK =
   import.meta.env.VITE_APK_URL ||
@@ -17,7 +16,9 @@ export default function Landing() {
             <img src={`${import.meta.env.BASE_URL}brand/afterlight-logo.png`} alt="" className="brand-mark" />
             Afterlight
           </div>
-          <Link className="btn ghost" to="/app">Open app</Link>
+          <a className="btn" href={APK}>
+            Download APK
+          </a>
         </nav>
         <h1>Your Story. Your Choices. Your World.</h1>
         <p className="lede">

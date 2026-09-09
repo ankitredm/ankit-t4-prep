@@ -77,8 +77,19 @@ jobs:
         run: |
           SRC="android/app/build/outputs/apk/release/app-release.apk"
           test -s "$SRC"
+          # Basic APK magic / zip local file header
+          python3 - <<'PY'
+          import pathlib, sys
+          p = pathlib.Path("android/app/build/outputs/apk/release/app-release.apk")
+          data = p.read_bytes()[:4]
+          if data[:2] != b"PK":
+              print("APK is not a valid zip/apk (missing PK header)", file=sys.stderr)
+              sys.exit(1)
+          print(f"APK ok: {p.stat().st_size} bytes")
+          PY
           mkdir -p artifacts
           cp "$SRC" artifacts/Afterlight.apk
+          test -f artifacts/Afterlight.apk
           ls -lh artifacts/Afterlight.apk
 
       - uses: actions/upload-artifact@v4
@@ -88,10 +99,31 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release asset
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Afterlight $TAG" --generate-notes
-          gh release upload "$TAG" artifacts/Afterlight.apk --clobber
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            # workflow_dispatch on a branch: mint a version tag from app versionName + run id
+            # (run id keeps tags unique without a separate git push that would re-trigger this workflow)
+            VERSION="$(grep -oP 'versionName\s+"\K[^"]+' android/app/build.gradle | head -1)"
+            TAG="v${VERSION}-r${GITHUB_RUN_ID}"
+          fi
+          echo "Publishing Afterlight.apk to release tag: ${TAG}"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" artifacts/Afterlight.apk --clobber
+            gh release edit "${TAG}" --latest 2>/dev/null || true
+          else
+            # --target pins the release to this commit; gh creates the lightweight tag (no extra push loop)
+            gh release create "${TAG}" \
+              --target "${GITHUB_SHA}" \
+              --title "Afterlight ${TAG}" \
+              --notes "Signed production APK for Afterlight ${TAG}." \
+              --latest \
+              artifacts/Afterlight.apk
+          fi
+          test -f artifacts/Afterlight.apk
+          ls -lh artifacts/Afterlight.apk
+          echo "Asset URL: https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/Afterlight.apk"

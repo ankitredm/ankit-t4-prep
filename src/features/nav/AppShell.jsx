@@ -1,21 +1,18 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import useNavVisibility from './useNavVisibility.js';
 
-function Icon({ d, fill }) {
+function Icon({ d }) {
   return (
-    <svg viewBox="0 0 24 24" width="23" height="23" aria-hidden="true" focusable="false">
-      {fill ? (
-        <path d={d} fill="currentColor" />
-      ) : (
-        <path
-          d={d}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      )}
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <path
+        d={d}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -28,6 +25,13 @@ const ICONS = {
     'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19 12a7 7 0 0 0-.14-1.4l2-1.55-2-3.46-2.36.95a7 7 0 0 0-2.42-1.4L13.7 1.6h-3.4l-.38 2.54a7 7 0 0 0-2.42 1.4l-2.36-.95-2 3.46 2 1.55a7 7 0 0 0 0 2.8l-2 1.55 2 3.46 2.36-.95a7 7 0 0 0 2.42 1.4l.38 2.54h3.4l.38-2.54a7 7 0 0 0 2.42-1.4l2.36.95 2-3.46-2-1.55c.1-.46.14-.93.14-1.4z',
 };
 
+const TABS = [
+  { to: '/app', end: true, label: 'Home', icon: 'home' },
+  { to: '/app/stories', label: 'Stories', icon: 'stories' },
+  { to: '/app/chats', label: 'Chats', icon: 'chats' },
+  { to: '/app/settings', label: 'Settings', icon: 'settings' },
+];
+
 function Tab({ to, end, label, icon }) {
   return (
     <NavLink
@@ -36,15 +40,28 @@ function Tab({ to, end, label, icon }) {
       className={({ isActive }) => (isActive ? 'tab on' : 'tab')}
       aria-label={label}
     >
-      <span className="tab-ico" aria-hidden>
-        <Icon d={ICONS[icon]} />
-      </span>
-      <span className="tab-label">{label}</span>
-      <span className="tab-dot" aria-hidden />
+      {({ isActive }) => (
+        <>
+          <span className="tab-ico" aria-hidden="true">
+            <Icon d={ICONS[icon]} />
+          </span>
+          <span className="tab-label">{label}</span>
+          <span className="tab-dot" aria-hidden="true" />
+          {isActive && <span className="sr-only">(current)</span>}
+        </>
+      )}
     </NavLink>
   );
 }
 
+/**
+ * Mobile application chrome for /app/*.
+ *
+ * The bottom tab bar is a single, non-wrapping row of four equal tabs. It
+ * slides away while the user scrolls down and returns as soon as they scroll
+ * up (or reach the top). Immersive routes — the reader, the workshop and
+ * onboarding — render without it so the chat composer is never covered.
+ */
 export default function AppShell({ children, hideNav }) {
   const loc = useLocation();
   const immersive =
@@ -52,16 +69,21 @@ export default function AppShell({ children, hideNav }) {
     loc.pathname.startsWith('/app/admin') ||
     loc.pathname === '/app/welcome';
   const show = !hideNav && !immersive;
+  const hidden = useNavVisibility({ enabled: show });
 
   return (
     <div className={`shell app-shell ${show ? 'has-tabbar' : ''}`}>
       {children}
       {show && (
-        <nav className="tabbar" aria-label="Main">
-          <Tab to="/app" end label="Home" icon="home" />
-          <Tab to="/app/stories" label="Stories" icon="stories" />
-          <Tab to="/app/chats" label="Chats" icon="chats" />
-          <Tab to="/app/settings" label="Settings" icon="settings" />
+        <nav
+          className={`tabbar${hidden ? ' tabbar-hidden' : ''}`}
+          aria-label="Main"
+          data-state={hidden ? 'hidden' : 'visible'}
+          aria-hidden={hidden ? 'true' : undefined}
+        >
+          {TABS.map((t) => (
+            <Tab key={t.to} {...t} />
+          ))}
         </nav>
       )}
     </div>

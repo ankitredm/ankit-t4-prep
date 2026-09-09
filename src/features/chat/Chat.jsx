@@ -319,7 +319,7 @@ export default function Chat({ profile }) {
               }
             }}
             onFocus={() => setTimeout(() => scrollToEnd(false), 120)}
-            placeholder="Speak, choose, or stay silent…"
+            placeholder="Speak, or stay silent…"
             enterKeyHint="send"
             autoComplete="off"
           />

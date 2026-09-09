@@ -1,0 +1,25 @@
+name: GitHub Pages (web)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build static site
+        env:
+          VITE_BASE: /ankit-t4-prep/
+          VITE_APK_URL: https://github.com/ankitredm/ankit-t4-prep/releases/latest/download/Afterlight.apk
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-pages-dist
+          path: dist
+          if-no-files-found: error

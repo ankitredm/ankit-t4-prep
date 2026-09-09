@@ -1,0 +1,53 @@
+name: Android debug APK
+
+on:
+  push:
+    branches: [main, arena/**]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  debug-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install and build web
+        run: |
+          npm ci
+          npm run build
+          node scripts/qa-unit.mjs
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Capacitor sync
+        run: npx cap sync android
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Verify APK
+        run: |
+          SRC="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$SRC"
+          mkdir -p artifacts
+          cp "$SRC" artifacts/Afterlight-debug.apk
+          ls -lh artifacts/Afterlight-debug.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Afterlight-debug
+          path: artifacts/Afterlight-debug.apk
+          if-no-files-found: error

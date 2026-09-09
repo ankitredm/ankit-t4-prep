@@ -3,6 +3,17 @@ import { STORY_SYSTEM, parseStoryParts } from '../parseStory.js';
 import { buildStoryMessages } from '../contextBuilder.js';
 import { endpointFor, postJson } from '../liveHttp.js';
 
+/** Anthropic and Gemini reject consecutive same-role messages. Merge them. */
+function squeezeRoles(messages) {
+  const out = [];
+  for (const m of messages) {
+    const last = out[out.length - 1];
+    if (last && last.role === m.role) last.content = `${last.content}\n\n${m.content}`;
+    else out.push({ role: m.role, content: m.content });
+  }
+  return out;
+}
+
 export class LiveChatProvider extends BaseAIProvider {
   constructor(config) {
     super(config);
@@ -102,20 +113,32 @@ export class LiveChatProvider extends BaseAIProvider {
           model: this.model,
           max_tokens: 700,
           system: sys,
-          messages: messages.map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content })),
+          messages: squeezeRoles(
+            messages.map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }))
+          ),
         },
       });
       return json?.content?.map((c) => c.text).join('\n') || '';
     }
 
     if (this.kind === 'gemini') {
+      // Gemini 400s unless contents strictly alternate AND start with role 'user'.
+      // A leading assistant block (the story opener) is folded into the system instruction.
+      const normalized = squeezeRoles(
+        messages.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', content: m.content }))
+      );
+      let geminiSys = sys;
+      while (normalized.length && normalized[0].role === 'model') {
+        geminiSys = `${geminiSys}\n\n${normalized.shift().content}`;
+      }
+      if (!normalized.length) normalized.push({ role: 'user', content: 'Begin the story.' });
       const json = await postJson({
         url: `${endpointFor(this.kind, this.baseUrl)}/models/${encodeURIComponent(this.model)}:generateContent?key=${encodeURIComponent(this.apiKey)}`,
         headers: { 'content-type': 'application/json' },
         body: {
-          systemInstruction: { parts: [{ text: sys }] },
-          contents: messages.map((m) => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
+          systemInstruction: { parts: [{ text: geminiSys }] },
+          contents: normalized.map((m) => ({
+            role: m.role,
             parts: [{ text: m.content }],
           })),
           generationConfig: { maxOutputTokens: 700 },

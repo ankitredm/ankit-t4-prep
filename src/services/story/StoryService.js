@@ -80,13 +80,6 @@ export const StoryService = {
   },
 
   async sendUserMessage({ conversationId, storyId, text, profile, onDelta }) {
-    await db.messages.add({
-      id: `msg-${crypto.randomUUID()}`,
-      conversationId,
-      role: 'user',
-      text,
-      createdAt: Date.now(),
-    });
     const stateRow = await db.storyState.where('conversationId').equals(conversationId).first();
     const characters = await db.characters.where('storyId').equals(storyId).toArray();
     const story = await db.stories.get(storyId);
@@ -96,10 +89,19 @@ export const StoryService = {
       if (v) visuals.push(v);
     }
     await MemoryEngine.ensureNameMemory(storyId, profile);
+    // Build context BEFORE persisting this message: `recent` is the history the
+    // new text answers, and `userText` is appended once by the context builder.
     const pack = await MemoryEngine.contextPack({
       storyId,
       conversationId,
       storyState: stateRow,
+    });
+    await db.messages.add({
+      id: `msg-${crypto.randomUUID()}`,
+      conversationId,
+      role: 'user',
+      text,
+      createdAt: Date.now(),
     });
     let result;
     try {

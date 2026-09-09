@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Afterlight</string>
+    <string name="title_activity_main">Afterlight</string>
+    <string name="package_name">app.afterlight.personal</string>
+    <string name="custom_url_scheme">app.afterlight.personal</string>
+</resources>

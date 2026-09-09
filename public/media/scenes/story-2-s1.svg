@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540">
+  <defs>
+    <linearGradient id="g402a6f" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c1a18"/>
+      <stop offset="1" stop-color="#05060c"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#g402a6f)"/>
+  <circle cx="264" cy="122" r="90" fill="#c9b27a" opacity="0.18"/>
+  <rect x="0" y="380" width="960" height="160" fill="#000" opacity="0.45"/>
+  <text x="48" y="430" fill="#ece7dc" font-size="28" font-family="Georgia">The Glass Orchard</text>
+  <text x="48" y="468" fill="#c9b27a" font-size="16" font-family="sans-serif">Opening still</text>
+</svg>

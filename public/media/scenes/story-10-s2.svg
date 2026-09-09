@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540">
+  <defs>
+    <linearGradient id="gb6fb98" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101418"/>
+      <stop offset="1" stop-color="#05060c"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#gb6fb98)"/>
+  <circle cx="382" cy="131" r="90" fill="#7c8cff" opacity="0.18"/>
+  <rect x="0" y="380" width="960" height="160" fill="#000" opacity="0.45"/>
+  <text x="48" y="430" fill="#ece7dc" font-size="28" font-family="Georgia">Cape of Ordinary Days</text>
+  <text x="48" y="468" fill="#7c8cff" font-size="16" font-family="sans-serif">Main location</text>
+</svg>

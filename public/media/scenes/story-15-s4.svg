@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540">
+  <defs>
+    <linearGradient id="g336799" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10140c"/>
+      <stop offset="1" stop-color="#05060c"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#g336799)"/>
+  <circle cx="251" cy="183" r="90" fill="#8a9a60" opacity="0.18"/>
+  <rect x="0" y="380" width="960" height="160" fill="#000" opacity="0.45"/>
+  <text x="48" y="430" fill="#ece7dc" font-size="28" font-family="Georgia">The Unwritten Season</text>
+  <text x="48" y="468" fill="#8a9a60" font-size="16" font-family="sans-serif">The discovery</text>
+</svg>

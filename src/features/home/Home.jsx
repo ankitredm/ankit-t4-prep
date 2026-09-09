@@ -93,10 +93,12 @@ export default function Home({ profile }) {
       </header>
 
       <main className="app-main page-in">
-        <p className="eyebrow">Tonight in Afterlight</p>
-        <h1 className="greeting">
-          {greetingFor()}, {profile?.name || 'traveler'}
-        </h1>
+        <div className="hello">
+          <p className="eyebrow">Tonight in Afterlight</p>
+          <h1 className="greeting">
+            {greetingFor()}, {profile?.name || 'traveler'}
+          </h1>
+        </div>
 
         {stories === null && <p className="sub">Opening tonight’s collection…</p>}
 
@@ -132,7 +134,7 @@ export default function Home({ profile }) {
                   onClick={() => nav(`/app/play/${continueEntry.story.id}`)}
                 >
                   Continue
-                  <span aria-hidden> →</span>
+                  <span aria-hidden="true">→</span>
                 </button>
               </div>
             </div>
@@ -196,7 +198,7 @@ export default function Home({ profile }) {
                   className="genre-tile"
                   onClick={() => nav(`/app/stories?genre=${encodeURIComponent(g)}`)}
                 >
-                  {g}
+                  <span>{g}</span>
                 </button>
               ))}
             </div>

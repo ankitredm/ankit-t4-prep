@@ -25,7 +25,7 @@ GitHub Pages: set `VITE_BASE=/ankit-t4-prep/` when building so assets and `/app`
 
 App ID: `app.afterlight.personal`  
 App name: Afterlight  
-versionName: `1.0.1` (from `android/app/build.gradle`)
+versionName: `1.0.2` (from `android/app/build.gradle`)
 
 The APK launches directly into `/app` via `server.appStartPath` in
 `capacitor.config.json` (native WebView start path — no dev server URL).
@@ -57,7 +57,7 @@ This environment has no Android SDK/Java; local Gradle is not run here.
 
 - `.github/workflows/android-debug.yml` — debug APK artifact `Afterlight-debug.apk` (not a GitHub Release).
 - `.github/workflows/android-release.yml` — **signed** `Afterlight.apk` on tag `v*` or workflow_dispatch. Fails if signing secrets are missing.
-- `.github/workflows/pages.yml` — builds `dist` for Pages (manual dispatch; does not deploy).
+- `.github/workflows/pages.yml` — builds `dist` and deploys GitHub Pages on every push to `main`.
 
 ### Release signing secrets (never commit these)
 
@@ -77,6 +77,14 @@ Default URL (override with `VITE_APK_URL`):
 `https://github.com/ankitredm/ankit-t4-prep/releases/latest/download/Afterlight.apk`
 
 That asset exists only after a successful tagged signed release. There is no APK in this repository.
+
+## Mobile UI (v1.0.2)
+
+- Bottom tab bar is a single, non-wrapping row — `Home | Stories | Chats | Settings` — on every phone width (320–480px verified).
+- The bar slides down and fades while scrolling down, and returns on the first upward scroll or at the top of the page (`src/features/nav/useNavVisibility.js`: passive listener, rAF-throttled, direction + top threshold, cleaned up on unmount).
+- The reader (`/app/play/*`) never shows the tab bar, so the chat composer is never covered.
+- Design tokens live at the top of `src/styles.css` (`--bg`, `--card`, `--gold`, `--line`, spacing scale, `--page-x`, `--nav-h`).
+- Hidden Library Workshop: tap the **Settings** title 7 times within 2 seconds → `/app/admin` (session-scoped; direct navigation without the unlock redirects to Settings).
 
 ## Providers
 

@@ -3,7 +3,7 @@ import React from 'react';
 const APK =
   import.meta.env.VITE_APK_URL ||
   'https://github.com/ankitredm/ankit-t4-prep/releases/latest/download/Afterlight.apk';
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 
 const genres = ['Horror', 'Mystery', 'Thriller', 'Fantasy', 'Sci-fi', 'Drama', 'Comedy', 'Adventure', 'Romance', 'Supernatural', 'Historical', 'Superhero', 'Crime', 'Paranormal'];
 

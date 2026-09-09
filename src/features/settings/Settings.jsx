@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../core/database/db.js';
 import { encryptSecret, maskKey } from '../../core/security/secrets.js';
@@ -8,6 +8,8 @@ import { AdminService } from '../../services/admin/AdminService.js';
 import AppShell from '../nav/AppShell.jsx';
 
 const WORKSHOP_KEY = 'afterlight_workshop';
+const UNLOCK_TAPS = 7;
+const UNLOCK_WINDOW_MS = 2000;
 
 function statusClass(status) {
   if (status === 'healthy') return 'status ok';
@@ -22,7 +24,7 @@ export default function Settings({ profile, onProfile }) {
   const [providers, setProviders] = useState([]);
   const [usage, setUsage] = useState({ used: 0, limit: 9 });
   const [storage, setStorage] = useState('—');
-  const [tap, setTap] = useState(0);
+  const taps = useRef({ count: 0, last: 0 });
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [keyDraft, setKeyDraft] = useState({});
   const [scale, setScale] = useState(1);
@@ -97,12 +99,21 @@ export default function Settings({ profile, onProfile }) {
     <AppShell>
       <header className="app-top">
         <h1
-          className="app-title"
+          className="app-title tap-target"
           onClick={() => {
-            const n = tap + 1;
-            setTap(n);
-            if (n >= 7) {
-              sessionStorage.setItem(WORKSHOP_KEY, '1');
+            // Hidden Library Workshop unlock: 7 taps within a rolling
+            // 2-second window. The counter resets when taps are too far apart.
+            const now = Date.now();
+            const t = taps.current;
+            t.count = now - t.last > UNLOCK_WINDOW_MS ? 1 : t.count + 1;
+            t.last = now;
+            if (t.count >= UNLOCK_TAPS) {
+              t.count = 0;
+              try {
+                sessionStorage.setItem(WORKSHOP_KEY, '1');
+              } catch {
+                /* private mode: the gate will simply bounce back */
+              }
               nav('/app/admin');
             }
           }}
@@ -167,6 +178,7 @@ export default function Settings({ profile, onProfile }) {
               max="1.35"
               step="0.05"
               value={scale}
+              style={{ '--range-fill': `${((scale - 0.9) / 0.45) * 100}%` }}
               onChange={async (e) => {
                 const v = Number(e.target.value);
                 setScale(v);
@@ -405,7 +417,7 @@ export default function Settings({ profile, onProfile }) {
 
         <section className="set-card" aria-label="About">
           <h2>About</h2>
-          <p>Afterlight 1.0.1 · personal local build</p>
+          <p>Afterlight 1.0.2 · personal local build</p>
           <p className="lede">
             Profile, stories, chat, and memories stay in this app’s local database.
             Nothing is synced. There is no account.
